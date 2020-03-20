@@ -1,10 +1,8 @@
-from darksky.api import DarkSky, DarkSkyAsync
-from darksky.types import languages, units, weather
 import requests as req
 from requests_toolbelt.utils import dump
 import json
 import pprint
-
+import sys
 
 
 def main():
@@ -13,8 +11,6 @@ def main():
     return 'fuck you'
 
 
-
-    
 def find_location(address, city, state):
 
     address = '+'.join(address.split(' '))
@@ -28,10 +24,11 @@ def find_location(address, city, state):
     res_obj = json.loads(res.content.decode('utf-8'))
     lat = res_obj['results'][0]['geometry']['location']['lat']
     lng = res_obj['results'][0]['geometry']['location']['lng']
-    print(lat,lng)
+    print(lat, lng)
     # pprint.pprint(res_obj)
 
     return lat, lng
+
 
 def weather(lat, long):
     latitude = lat
@@ -39,20 +36,22 @@ def weather(lat, long):
     res = req.get(f'https://api.weather.gov/points/{latitude},{longitude}',)
     res_obj = (json.loads(res.content.decode('utf-8')))
     location = {
-        'gridX':res_obj['properties']['gridX'], 
-    'gridY':res_obj['properties']['gridY'], 
-    'office':res_obj['properties']['cwa'],
-    
+        'gridX': res_obj['properties']['gridX'],
+        'gridY': res_obj['properties']['gridY'],
+        'office': res_obj['properties']['cwa'],
+
     }
     office = location['office']
     gridX = location['gridX']
     gridY = location['gridY']
 
-    res = req.get(f'https://api.weather.gov/gridpoints/{office}/{gridX},{gridY}/forecast')
+    res = req.get(
+        f'https://api.weather.gov/gridpoints/{office}/{gridX},{gridY}/forecast')
     res_obj = json.loads(res.content.decode('utf-8'))
     daily = res_obj['properties']['periods']
 
-    res = req.get(f'https://api.weather.gov/gridpoints/{office}/{gridX},{gridY}/forecast/hourly')
+    res = req.get(
+        f'https://api.weather.gov/gridpoints/{office}/{gridX},{gridY}/forecast/hourly')
     res_obj = json.loads(res.content.decode('utf-8'))
     hourly = res_obj['properties']['periods']
 
@@ -61,5 +60,15 @@ def weather(lat, long):
         'hourly': hourly,
     }
 
+
+def test():
+    url = 'https://us-central1-weather-271603.cloudfunctions.net/daily'
+    res = req.get(url, params={
+        'lat': 33.0198,
+        'long': -96.6989,
+    })
+    print(res.content)
+
+
 if __name__ == "__main__":
-    main()
+    test()
